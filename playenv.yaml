@@ -5,54 +5,33 @@
   vars:
   - ubuntu_release: quantal
   - user: ubuntu
-  - group: $user
-  - repo_url: git://github.com/kaiinkinen/pvm.git
-  - repo_remote: origin
-  - repo_version: master
-  - pvm: /home/ubuntu/pvm
-  - play_version: 2.1.1
+  - group: ubuntu
+  - play_version: 2.5.0
 
   tasks:
    - name: Install Unzip
-     action: apt pkg=unzip state=latest install_recommends=yes    
+     action: apt pkg=unzip state=latest install_recommends=yes
 
    - name: Install Git
-     action: apt pkg=git state=latest install_recommends=yes    
+     action: apt pkg=git state=latest install_recommends=yes
 
    - name: Install Authbind
-     action: apt pkg=authbind state=latest install_recommends=yes    
+     action: apt pkg=authbind state=latest install_recommends=yes
 
    - name: Configure Authbind
-     action: copy content="" dest=/etc/authbind/byport/80 owner=$user group=$group mode=0500 
- 
-   - name: Remove old PVM checkouts
-     action: file path=${pvm} state=absent
-
-   - name: Checkout PVM from Git
-     action: git repo=$repo_url dest=$pvm remote=$repo_remote version=$repo_version
-
-   - name: Turn PVM into bash script
-     action: lineinfile dest=${pvm}/pvm.sh regexp="^# Play Version Manager" line="#!/bin/bash" state=present
-
-   - name: Set PVM environment and install Play $play_version
-     action: raw . ${pvm}/pvm.sh && pvm install $play_version && pvm use $play_version
-
-   - name: Set $user as PVM owner
-     action: file path=${pvm} owner=$user group=$group recurse=yes  state=directory
+     action: copy content="" dest=/etc/authbind/byport/80 owner={{ user }} group={{ group }} mode=0500
 
    - name: Add Java repository to sources
      action: apt_repository repo='ppa:webupd8team/java'
 
    - name: Autoaccept license for Java
-     action: shell echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+     action: shell echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
 
    - name: Update APT package cache
      action: apt update_cache=yes
 
-   - name: Install Java 7
-     action: apt pkg=oracle-java7-installer state=latest install_recommends=yes    
+   - name: Install Java 8
+     action: apt pkg=oracle-java8-installer state=latest install_recommends=yes
 
-   - name: Set Java 7 Env
-     action: apt pkg=oracle-java7-set-default state=latest install_recommends=yes
-
-
+   - name: Set Java 8 Env
+     action: apt pkg=oracle-java8-set-default state=latest install_recommends=yes
